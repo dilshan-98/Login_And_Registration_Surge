@@ -1,42 +1,45 @@
 const User = require("../models/User");
 const errorResponse = require("../utils/errorResponse");
+const bcrypt = require("bcrypt");
 
 exports.register = async (req, res, next) => {
-    const { fullname, username, email, password } = req.body;
-
     const emailRegex =
         /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
 
     const passwordRegex =
         /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
 
-    if (fullname || email || username || password) {
-        return next(new errorResponse("Fields cannot be empty!!!", 400));
-    }
-
-    if (email.length > 254) {
-        return res.status(400).send({ message: "Invalid Email!!!" });
-    }
-
-    const validEmail = emailRegex.test(email);
-
-    if (!validEmail) {
-        return res.status(400).send({ message: "Invalid Email!!!" });
-    }
-
-    var validPassword = passwordRegex.test(password);
-
-    if (!validPassword) {
-        return res.status(400).send({
-            message:
-                "Password must contain minimum 8 characters, one UPPERCASE letter, one lowercase letter, one number and one special character!!!",
-        });
-    }
-
     try {
-        const user = await User.create({ fullname, username, email, password });
 
-        res.status(200).json({ success: true, data: user });
+        const { fullname, username, email, password } = req.body;
+
+        if (!(fullname || email || username || password)) {
+            return next(new errorResponse("Fields cannot be empty", 400));
+        }
+
+        if (email.length > 254) {
+            return next(new errorResponse("Invalid Email", 400));
+        }
+
+        const validEmail = emailRegex.test(email);
+
+        if (!validEmail) {
+            return next(new errorResponse("Invalid Email", 400));
+        }
+
+        var validPassword = passwordRegex.test(password);
+
+        if (!validPassword) {
+            return next(new errorResponse("Password must contain minimum 8 characters, one UPPERCASE letter, one lowercase letter, one number and one special character", 400));
+        }
+
+        const salt = await bcrypt.genSalt(10);
+
+        const passwordEncrypted = await bcrypt.hash(password, salt);
+
+        const user = await User.create({ fullname, username, email, password: passwordEncrypted });
+
+        sendToken(user, 201, res);
 
     } catch (error) {
         next(error);
@@ -63,9 +66,22 @@ exports.login = async (req, res, next) => {
             return next(new errorResponse("Invalid credentials", 401));
         }
 
-        res.status(200).json({ success: true, data: user });
+        sendToken(user, 200, res);
 
     } catch (error) {
         next(error);
     }
 };
+
+exports.profileUpdate = async (req, res, next) => {
+    try {
+        
+    } catch (error) {
+        next(error);
+    }
+}
+
+const sendToken = async (user, statusCode, res) => {
+    const token = await user.getSignedToken();
+    res.status(statusCode).json({ success: true, token });
+}

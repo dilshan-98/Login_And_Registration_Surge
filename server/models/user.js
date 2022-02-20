@@ -33,7 +33,7 @@ UserSchema.method("getSignedToken", async function () {
 });
 
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model.User || mongoose.model("User", UserSchema);
 
 
 

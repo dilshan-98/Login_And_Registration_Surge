@@ -1,6 +1,8 @@
-const User = require("../models/User");
+const mongoose = require("mongoose");
+const User = mongoose.model("User");
 const errorResponse = require("../utils/errorResponse");
 const bcrypt = require("bcrypt");
+
 
 exports.register = async (req, res, next) => {
     const emailRegex =
@@ -66,7 +68,10 @@ exports.login = async (req, res, next) => {
             return next(new errorResponse("Invalid credentials", 401));
         }
 
-        sendToken(user, 200, res);
+        //retrieve data without the password
+        const definiteuser = await User.findOne({ email });
+
+        sendToken(definiteuser, 200, res);
 
     } catch (error) {
         next(error);
@@ -74,8 +79,42 @@ exports.login = async (req, res, next) => {
 };
 
 exports.profileUpdate = async (req, res, next) => {
+    const passwordRegex =
+        /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
+
     try {
-        
+        //had to split user id to be defined in the findOne method since for some reason data returned from the db did not match the req.user._id when coded as in usual way
+        const id = req.user._id;
+
+        const user = await User.findOne({_id: mongoose.Types.ObjectId(id)});
+
+        console.log(user);;
+
+        if(!user){
+            return next(new errorResponse("User unidentified", 404));
+        }
+
+        user.fullname = req.body.fullname || user.fullname;
+        user.username = req.body.username || user.username;
+
+        if (req.body.password) {
+            var validPassword = passwordRegex.test(req.body.password);
+
+            if (!validPassword) {
+                return next(new errorResponse("Password must contain minimum 8 characters, one UPPERCASE letter, one lowercase letter, one number and one special character", 400));
+            }
+
+            const salt = await bcrypt.genSalt(10);
+
+            const passwordEncrypted = await bcrypt.hash(req.body.password, salt);
+
+            user.password = passwordEncrypted;
+        }
+
+        await user.save();
+
+        sendToken(user, 201, res);
+
     } catch (error) {
         next(error);
     }
@@ -83,5 +122,5 @@ exports.profileUpdate = async (req, res, next) => {
 
 const sendToken = async (user, statusCode, res) => {
     const token = await user.getSignedToken();
-    res.status(statusCode).json({ success: true, token });
+    res.status(statusCode).json({ success: true, token, user });
 }

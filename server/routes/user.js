@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const auth = require("../middleware/authentication");
 
 const {
   register,
@@ -9,6 +10,6 @@ const {
 
 router.route("/register").post(register);
 router.route("/login").post(login);
-router.route("/profileUpdate").put(profileUpdate);
+router.route("/profileUpdate").put(auth, profileUpdate);
 
 module.exports = router;

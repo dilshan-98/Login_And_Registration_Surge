@@ -35,6 +35,16 @@ exports.register = async (req, res, next) => {
             return next(new errorResponse("Password must contain minimum 8 characters, one UPPERCASE letter, one lowercase letter, one number and one special character", 400));
         }
 
+        const existsEmail = await User.findOne({ email });
+        if (existsEmail) {
+            return next(new errorResponse("User Already Exists", 400));
+        }
+
+        const existsUname = await User.findOne({ username });
+        if (existsUname) {
+            return next(new errorResponse("Select Different Username", 400));
+        }
+
         const salt = await bcrypt.genSalt(10);
 
         const passwordEncrypted = await bcrypt.hash(password, salt);
@@ -49,11 +59,24 @@ exports.register = async (req, res, next) => {
 };
 
 exports.login = async (req, res, next) => {
+    const emailRegex =
+        /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
             return next(new errorResponse("Please provide email or password", 400));
+        }
+
+        if (email.length > 254) {
+            return next(new errorResponse("Invalid Email", 400));
+        }
+
+        const validEmail = emailRegex.test(email);
+
+        if (!validEmail) {
+            return next(new errorResponse("Invalid Email", 400));
         }
 
         const user = await User.findOne({ email }).select("+password");
@@ -78,6 +101,20 @@ exports.login = async (req, res, next) => {
     }
 };
 
+exports.userDetails = async (req, res, next) => {
+
+    try {
+        const id = req.user._id;
+
+        const user = await User.findOne({ _id: mongoose.Types.ObjectId(id) });
+
+        res.status(200).json({ success: true, data: {username: user.username, fullname: user.fullname} });
+    } catch (error) {
+        next(error);
+    }
+
+};
+
 exports.profileUpdate = async (req, res, next) => {
     const passwordRegex =
         /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/;
@@ -86,11 +123,11 @@ exports.profileUpdate = async (req, res, next) => {
         //had to split user id to be defined in the findOne method since for some reason data returned from the db did not match the req.user._id when coded as in usual way
         const id = req.user._id;
 
-        const user = await User.findOne({_id: mongoose.Types.ObjectId(id)});
+        const user = await User.findOne({ _id: mongoose.Types.ObjectId(id) });
 
         console.log(user);;
 
-        if(!user){
+        if (!user) {
             return next(new errorResponse("User unidentified", 404));
         }
 

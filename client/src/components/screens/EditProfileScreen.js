@@ -8,6 +8,8 @@ const EditProfileScreen = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const navigate = useNavigate();
 
@@ -40,22 +42,29 @@ const EditProfileScreen = () => {
 
     
 
-    const submitHandler = (e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
 
-        const settings = {
-            header: {
+        const config = {
+            headers: {
                 "Content-type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             },
         };
 
-        try {
-            // const {data} = await axios.post("/api/user/login", {username,password}, settings);
-            // console.log(data);
-            // localStorage.setItem("authToken", data.token);
-            // localStorage.setItem("userDetails", JSON.stringify(data))
+        if (password !== confirmPassword) {
+            setPassword("");
+            setConfirmPassword("");
+            setTimeout(() => {
+                setError("");
+            }, 4000);
+            return setError("Passwords Do Not Match");
+        }
 
-            navigate("/");
+        try {
+            const {data} = await axios.put("/api/user/profileUpdate", {username,fullname,password}, config);
+            //localStorage.setItem("authToken", data.token);
+            setSuccess("Updated Successfully");
         } catch (error) {
             setError(error.response.data.error);
 
@@ -68,14 +77,14 @@ const EditProfileScreen = () => {
 
     return (
         <div className="editprofile-screen">
-            <form className="editprofile-screen__form">
-                <h3 className="login-screen__title">Login</h3>
-                {/**error && <span className="error-message">{error}</span>**/}
-                {/**success && (
+            <form onSubmit={submitHandler} className="editprofile-screen__form">
+                <h3 className="login-screen__title">Update Profile</h3>
+                {error && <span className="error-message">{error}</span>}
+                {success && (
                     <span className="success-message">
-                        Updated Successfully
+                        {success}
                     </span>
-                )**/}
+                )}
                 <div className="form-group">
                     <label htmlFor="fullname">Full Name</label>
                     <input type="text" required id="fullname" tabIndex={1} placeholder="Enter Full Name" value={fullname} onChange={(e) => setFullname(e.target.value)}

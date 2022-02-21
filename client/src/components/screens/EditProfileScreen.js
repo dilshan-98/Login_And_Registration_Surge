@@ -107,7 +107,7 @@ const EditProfileScreen = () => {
                 </div>
 
                 <button type="submit" className="btn btn-primary" tabIndex={5}>
-                    Register
+                    Edit
                 </button>
             </form>
         </div>

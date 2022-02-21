@@ -16,14 +16,15 @@ const HomePageScreen = () => {
         navigate("/login");
     };
 
+    const navigateHandler = () => {
+        navigate("/editprofile");
+    };
+
     return (
         <div>
             <div style={{ background: "green", color: "white" }}>Welcome</div>
             <button onClick={logoutHandler}>Logout</button>
-            <button ><Link to="/editprofile"></Link>prof</button>
-            <span>
-                    New Users? <Link to="/editprofile" tabIndex={5}> Register </Link>
-            </span>
+            <button onClick={navigateHandler}>Edit Profile</button>
         </div>
     );
 };

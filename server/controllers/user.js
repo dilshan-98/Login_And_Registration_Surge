@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const User = mongoose.model("User");
 const errorResponse = require("../utils/errorResponse");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 
 exports.register = async (req, res, next) => {

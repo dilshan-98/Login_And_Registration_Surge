@@ -2,7 +2,7 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const errorResponse = require("../utils/errorResponse");
 
-const private = async (req, res, next) => {
+const authentication = async (req, res, next) => {
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
@@ -31,4 +31,4 @@ const private = async (req, res, next) => {
 
 }
 
-module.exports = private;
+module.exports = authentication;

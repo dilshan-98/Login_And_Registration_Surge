@@ -1,5 +1,7 @@
 # Login_And_Registration_Surge
 
+UPDATED: THIS BRANCH INCLUDES THE DOCKER SETUP FOR BOTH FE AND BE (FULLY CONNECTED AND RUNNING)
+
 This is an application done for the Surge Global Internship
 
 

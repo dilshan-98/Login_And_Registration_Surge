@@ -11,6 +11,8 @@ Packages used: Axios, React Router, express, nodemon, jsonwebtoken, bcrypt, dot-
 
 Database: MongoDB Atlas
 
+Access Database using Compass: mongodb+srv://admin:admin@cluster0.tvuao.mongodb.net/test
+
 
 Environmental configuration 
 

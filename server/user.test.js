@@ -1,16 +1,8 @@
 const request = require("supertest");
-const bcrypt = require("bcrypt");
-
-//const mongoose = require("mongoose");
-const User = require("./models/user");
 
 const app = require("../server/server");
 
-
 let auth = {};
-let auth2 = {};
-
-
 
 test("Login existing user", async () => {
     const user = await request(app)
@@ -44,21 +36,16 @@ test("New User Signin", async () => {
         })
         .expect(201)
     expect(user.body.token);
-
-    auth2.token = user.body.token;
 });
 
 test("Update Profile : Only username and fullname", async () => {
     await request(app)
         .put("/api/user/userDetails")
-        .set("authorization", `Bearer ${auth2.token}`)
+        .set("authorization", `Bearer ${auth.token}`)
         .send({
-            fullname: "Shan Dinuwan Perera",
-            username: "ShanDinuwan98"
+            fullname: "Dinusha Dilshan Siyasinghe"
         })
-        
         .expect(201);
-
 });
 
 

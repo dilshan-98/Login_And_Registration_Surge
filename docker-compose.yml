@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  backend-api:
+    image: login_and_registration_surge-server
+    build:
+      context: ./server
+      dockerfile: ./Dockerfile
+    ports:
+      - 5000:5000
+    volumes:
+      - ./server:/app
+    networks:
+      - login_and_registration_surge
+
+  frontend-client:
+    image: 'login_and_registration_surge-client'
+    build:
+      context: ./client
+      dockerfile: ./Dockerfile
+    ports:
+      - 3000:3000
+    networks:
+      - login_and_registration_surge
+    volumes:
+      - ./client:/app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend-api
+
+networks:
+  login_and_registration_surge:
+    driver: bridge
